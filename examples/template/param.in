@@ -1,0 +1,122 @@
+&PARA
+    p_row = 2, 
+    p_col = 2 /
+!--------------------------------------------------------------------------------------------------
+! In x-pencil mode, `p_row` is the number of partitions in the y direction,
+!   `p_col` is the number of partitions in the z direction.
+! The coresponding number of MPI tasks should be `p_row*p_col`
+!--------------------------------------------------------------------------------------------------
+
+&MESH
+    read_mesh = F, mesh_type = 1, stretch_func = 0, stretch_ratio = 3.0, 
+    nx = 128, ny = 128, nz = 128, 
+    lx = 12.566370614359172, ly = 6.283185307179586, lz = 2.0 /
+!--------------------------------------------------------------------------------------------------
+! `read_mesh` determines whether a user-supplied grid file should be used.
+!   If true (T), PowerLLEL reads the size of grid cells in the z direction line by line,
+!   if false (F), a uniform/nonuniform grid is automatically generated according to `mesh_type`.
+! `mesh_type`
+!   0 => uniform grid
+!   1 => nonuniform grid stretched by tanh/sin function
+! `stretch_func` & `stretch_ratio`
+!   0 & (0.0, +\infty) => tanh
+!   1 & (0.0, 1.0]     => sin
+! `nx`, `ny`, `nz` are numbers of grid cells in the streamwise, spanwise and wall-normal direction.
+! `lx`, `ly`, `lz` are computation domain sizes in coresponding directions.
+!--------------------------------------------------------------------------------------------------
+
+&TIME
+    nt_end = 1000,
+    dt = 1.0E-3, 
+    nt_check = 100, 
+    cfl_limit = 1.0, 
+    div_limit = 1.0E-9 /
+!--------------------------------------------------------------------------------------------------
+! `nt_end` is the number of simulation time steps.
+! `dt` is the time step size (fixed).
+! `nt_check` is the period of checking computation stability.
+! `cfl_limit` & `div_limit` are limits of CFL number and velocity divergence.
+!--------------------------------------------------------------------------------------------------
+
+&RESTART
+    is_restart = F, 
+    fn_prefix_input_inst = 'save', 
+    fn_prefix_input_stat = 'save' /
+!--------------------------------------------------------------------------------------------------
+! `is_restart` determines whether a restart simulation from previously saved checkpoint files 
+! should be conducted.
+! `fn_prefix_input_inst` & `fn_prefix_input_stat` are filename prefixes of checkpoint files.
+!--------------------------------------------------------------------------------------------------
+
+&PHYSICAL
+    re = 2800, u_ref = 1.0, l_ref = 1.0, 
+    initial_field = 'poi', u0 = 1.0,
+    init_with_noise = T, noise_intensity = 0.5,
+    smooth_wall_visc = F, u_crf = 0.0 /
+!--------------------------------------------------------------------------------------------------
+! `re`, `u_ref` and `l_ref` are Reynolds number, reference velocity and reference length.
+! `initial_field` chooses the initial velocity field.
+!   `uni` => uniform velocity at `u0`
+!   `poi` => plane Poiseuille flow profile with mean velocity `uref`
+!   `log` => logarithmic profile with mean velocity `uref`
+! `init_with_noise` determines whether random perturbation should be added to initial fields.
+! `noise_intensity` specifies the amplitude of the perturbation.
+! `smooth_wall_visc` has an impact on the calculation of wall-normal viscosity term (d2u/dz2 & d2v/dz2)
+!   at the grid points closest to walls. It is recommended to set it to `T` (.true.) if the grid
+!   is stretched dramatically (e.g., using a sin-type grid) in the wall-normal direction.
+! `u_crf` specifies the streamwise velocity of the convecting reference frame.
+!--------------------------------------------------------------------------------------------------
+
+&FORCE
+    is_forced = T, F, F, 
+    vel_force = 1.0, 0.0, 0.0 /
+!--------------------------------------------------------------------------------------------------
+! `is_forced`, if true in the direction in question, forces the flow with a pressure gradient that 
+! balances the total wall shear. The three boolean values corresponds to three domain directions.
+! `vel_force` is the target bulk velocity in the direction in question (where `is_forced` is true).
+! The three values correspond to three domain directions.
+!--------------------------------------------------------------------------------------------------
+
+&STATISTICS
+    nt_init_stat = 100000, 
+    sample_interval = 10, 
+    stat_which_var = T, T, T,   T, T, T,   T, T, T,   T, T /
+!--------------------------------------------------------------------------------------------------
+!   stat_which_var : u, v, w,  u2,v2,w2,  uv,uw,vw,   p,p2
+! stat_which_var is an array of 11 logical variables, which 
+! decide whether the coresponding variables (listed as above) 
+! should be included in the statistical process.
+!--------------------------------------------------------------------------------------------------
+
+&OUTPUT
+    nt_out_scrn = 100, 
+    nt_out_inst = 100000,
+    nt_out_stat = 100000,
+    nt_out_save = 100000, overwrite_save = F, auto_cleanup = T, num_retained = 0,
+    nt_out_moni = 100 /
+!--------------------------------------------------------------------------------------------------
+! `nt_out_scrn` is the period of writing information to standard output (e.g., displayed on screen).
+! `nt_out_inst` is the period of writing instantaneous scalar fields.
+! `nt_out_stat` is the period of writing statistics scalar fields.
+! `nt_out_save` is the period of writing checkpoint files.
+!   `overwrite_save` determines whether new checkpoint files will directly overwrite the old ones.
+!     If true, the filename of the old and new file will be the same.
+!     If false, a timestep string will be added to the filename to avoid overwriting.
+!   `auto_cleanup` determines whether old checkpoint files should be removed for saving disk space.
+!   Old files are removed once the new ones are completely saved.
+!   `num_retained` specifies how many batches of old checkpoint files should be retained. A value 
+!   of zero means only new files is retained.
+! `nt_out_save` is the period of writing monitor information.
+!--------------------------------------------------------------------------------------------------
+
+&MONITOR
+    out_forcing = F, 
+    out_probe_point = F, probe_ijk = 64, 64, 64, 
+    out_skf_z = T,T,
+    out_region = F, nt_out_region = 100, region_ijk = 60, 68, 60, 68, 1, 128 /
+!--------------------------------------------------------------------------------------------------
+! `out_forcing` controls the output of flow forcing related information.
+! `out_probe_point` controls the output of flow quantities (u, v, w, p) at the probe point.
+! `out_skf_z` controls the output of the skin friction coefficient at the bottom/top wall.
+! `out_region` controls the output of the specified flow region.
+!--------------------------------------------------------------------------------------------------

@@ -1,0 +1,32 @@
+&gptlnl
+! These settings are all the opposite of the default
+ wall            = .true.    ! gptlsetoption (gptlwall,0)
+ cpu             = .false.   ! gptlsetoption (gptlcpu,1)
+ abort_on_error  = .true.    ! gptlsetoption (gptlabort_on_error,1)
+ overhead        = .true.    ! gptlsetoption (gptloverhead,1)
+ depthlimit      = 5         ! gptlsetoption (gptldepthlimit,5)
+ verbose         = .false.   ! gptlsetoption (gptlverbose,1)
+ percent         = .true.    ! gptlsetoption (gptlpercent,1)
+! Comment out persec and multiplex so "nlreader" test won't fail even if 
+!   PAPI unavailable
+! persec          = .false.  ! gptlsetoption (gptlpersec,0)
+! multiplex       = .true.   ! gptlsetoption (gptlmultiplex,1)
+ dopr_preamble   = .false.   ! gptlsetoption (gptldopr_preamble,0)
+ dopr_threadsort = .false.   ! gptlsetoption (gptldopr_threadsort,0)
+ dopr_multparent = .false.   ! gptlsetoption (gptldopr_multparent,0)
+ dopr_collision  = .false.   ! gptlsetoption (gptldopr_collision,0)
+
+! utr, print_method, and eventlist use character variables instead of integer 
+! to avoid "magic number" settings in the namelist
+
+ utr             = 'mpiwtime'     ! gptlsetutr (gptlmpiwtime), timing routine
+ print_method    = 'full_tree'    ! gptlsetoption (gptlprintmethod, gptlfull_tree)
+!print_method    = 'first_parent' ! gptlsetoption (gptlprintmethod, gptlfirst_parent)
+!print_method    = 'last_parent'  ! gptlsetoption (gptlprintmethod, gptllast_parent)
+!print_method    = 'most_frequent'! gptlsetoption (gptlprintmethod, gptlmost_frequent)
+
+! List of events to count. PAPI_FP_OPS is a PAPI event, and GPTL_CI is a
+! PAPI-based derived event.
+! Comment out eventlist so "nlreader" test won't fail even if PAPI unavailable
+! eventlist       = 'PAPI_FP_OPS','GPTL_CI'
+/

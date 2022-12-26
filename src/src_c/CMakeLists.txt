@@ -1,0 +1,41 @@
+include(FortranCInterface)
+FortranCInterface_VERIFY()
+
+file(GLOB c_src *.c *.h)
+add_library(c_binding STATIC ${c_src})
+
+target_include_directories(c_binding PRIVATE ${MPI_C_INCLUDE_PATH})
+target_link_libraries(c_binding ${MPI_C_LIBRARIES})
+
+if(USE_OMP)
+    find_package(OpenMP)
+    target_include_directories(c_binding PUBLIC ${OpenMP_C_INCLUDE_DIRS})
+    target_link_libraries(c_binding ${OpenMP_C_LIBRARIES})
+    target_compile_options(c_binding PUBLIC ${OpenMP_C_FLAGS})
+    target_link_options(c_binding PUBLIC ${OpenMP_C_FLAGS})
+endif()
+
+if(USE_PDD)
+    target_compile_definitions(c_binding PRIVATE -D_PDD)
+endif()
+
+target_compile_definitions(c_binding PRIVATE -D_PRECALC_TRID_COEFF)
+
+if(USE_MKL)
+    target_compile_definitions(c_binding PRIVATE -DUSE_MKL)
+    target_link_libraries(c_binding mkl_intel_lp64 mkl_sequential mkl_core)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(FFTW3 REQUIRED fftw3 IMPORTED_TARGET)
+    target_include_directories(c_binding PRIVATE ${FFTW3_INCLUDE_DIRS})
+    target_link_directories(c_binding PRIVATE ${FFTW3_LIBRARY_DIRS})
+    target_link_libraries(c_binding ${FFTW3_LIBRARIES})
+endif()
+
+if(USE_GPTL)
+    pkg_search_module(GPTL REQUIRED gptl)
+    target_include_directories(c_binding PRIVATE ${GPTL_INCLUDE_DIRS})
+    target_link_directories(c_binding PRIVATE ${GPTL_LIBRARY_DIRS})
+    target_link_libraries(c_binding ${GPTL_LIBRARIES})
+    target_compile_definitions(c_binding PRIVATE -DGPTL)
+endif()
